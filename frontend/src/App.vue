@@ -93,7 +93,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, nextTick } from 'vue'
+import { ref, onMounted, computed, nextTick, provide } from 'vue'
 import { isAuthenticated, getCurrentUser, logout, setupAxiosInterceptors } from './utils/auth'
 import { useRoute } from 'vue-router'
 import LocalSearch from './components/LocalSearch.vue'
@@ -104,6 +104,11 @@ const isLoggedIn = ref(false)
 const currentUser = ref({})
 const resources = ref([])
 const footerPreloaded = ref(false)
+const resourcesLoaded = ref(false)
+
+// 将资源数据和加载状态提供给所有子组件
+provide('globalResources', resources)
+provide('resourcesLoaded', resourcesLoaded)
 
 // 计算当前是否在管理员页面
 const isAdminPage = computed(() => {
@@ -160,8 +165,15 @@ const preloadFooterContent = () => {
 // 获取资源数据，用于全局搜索
 const fetchResourcesForSearch = async () => {
   try {
-    const response = await axios.get('/api/resources/public')
+    // 确保默认按创建时间排序
+    const response = await axios.get('/api/resources/public', {
+      params: {
+        sort_by: 'created_at',
+        sort_order: 'desc'
+      }
+    })
     resources.value = response.data
+    resourcesLoaded.value = true // 设置加载完成标识
     console.log('搜索框资源加载完成，共加载', resources.value.length, '条资源')
   } catch (err) {
     console.error('获取资源失败:', err)

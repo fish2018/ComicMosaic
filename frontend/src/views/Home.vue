@@ -107,7 +107,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, inject, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import axios from 'axios'
 
@@ -118,26 +118,82 @@ const loading = ref(true)
 const error = ref(null)
 const deleteSuccess = ref(false)
 const sortBy = ref('created_at') // 默认按创建时间排序
+const originalResources = ref([]) // 存储原始数据，用于前端排序
+
+// 注入App.vue提供的全局资源数据和加载状态
+const globalResources = inject('globalResources', [])
+const resourcesLoaded = inject('resourcesLoaded', ref(false))
+
+// 监听全局资源数据变化
+watch(resourcesLoaded, (newValue) => {
+  if (newValue && globalResources.value.length > 0) {
+    // 全局资源已加载，使用它们
+    originalResources.value = [...globalResources.value]
+    resources.value = [...globalResources.value]
+    
+    // 如果当前排序不是创建时间，应用本地排序
+    if (sortBy.value !== 'created_at') {
+      applySorting()
+    }
+    
+    loading.value = false
+    console.log('Home页面使用全局资源数据，避免重复API调用')
+  }
+}, { immediate: true })
 
 const fetchResources = async () => {
+  // 如果全局资源已加载，不需要重新获取
+  if (resourcesLoaded.value && globalResources.value.length > 0) {
+    originalResources.value = [...globalResources.value]
+    resources.value = [...globalResources.value]
+    
+    // 如果当前排序不是创建时间，应用本地排序
+    if (sortBy.value !== 'created_at') {
+      applySorting()
+    }
+    
+    loading.value = false
+    console.log('Home页面使用全局资源数据，避免重复API调用')
+    return
+  }
+  
+  // 全局资源未加载时，才调用API
   loading.value = true
   error.value = null
   
   try {
-    // 使用公共API获取已审批的资源，添加排序参数
+    // 使用公共API获取已审批的资源，始终按创建时间排序获取数据
     const response = await axios.get('/api/resources/public', {
       params: {
-        sort_by: sortBy.value,
+        sort_by: 'created_at',
         sort_order: 'desc'
       }
     })
+    originalResources.value = [...response.data] // 保存原始数据副本
     resources.value = response.data
+    
+    // 如果当前排序不是创建时间，应用本地排序
+    if (sortBy.value !== 'created_at') {
+      applySorting()
+    }
+    
     console.log('Fetched resources:', resources.value)
   } catch (err) {
     console.error('获取资源失败:', err)
     error.value = '获取资源列表失败，请稍后重试'
   } finally {
     loading.value = false
+  }
+}
+
+// 在前端应用排序
+const applySorting = () => {
+  if (sortBy.value === 'likes_count') {
+    // 按点赞数排序
+    resources.value = [...resources.value].sort((a, b) => b.likes_count - a.likes_count)
+  } else {
+    // 恢复创建时间排序（使用原始数据）
+    resources.value = [...originalResources.value]
   }
 }
 
@@ -177,12 +233,19 @@ const getResourceTypes = (resource) => {
 const setSort = (sort) => {
   if (sortBy.value !== sort) {
     sortBy.value = sort
-    fetchResources() // 重新获取资源
+    
+    // 已经有数据时，直接在前端排序
+    if (resources.value.length > 0) {
+      applySorting()
+    } else {
+      // 没有数据时才调用API
+      fetchResources()
+    }
   }
 }
 
 onMounted(() => {
-  fetchResources()
+  // fetchResources()
   
   // 检查URL查询参数，显示删除成功提示
   if (route.query.deleted === 'success') {

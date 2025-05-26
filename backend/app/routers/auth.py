@@ -54,7 +54,13 @@ def create_initial_admin(db: Session):
 
 @router.get("/me", response_model=UserSchema)
 async def read_users_me(current_user: User = Depends(get_current_active_user)):
-    return current_user
+    # 显式将SQLAlchemy模型转换为Pydantic模型
+    return UserSchema(
+        id=current_user.id,
+        username=current_user.username,
+        is_admin=current_user.is_admin,
+        created_at=current_user.created_at
+    )
 
 @router.post("/change-password", response_model=UserSchema)
 async def change_password(
@@ -75,4 +81,10 @@ async def change_password(
     db.commit()
     db.refresh(current_user)
     
-    return current_user 
+    # 显式将SQLAlchemy模型转换为Pydantic模型
+    return UserSchema(
+        id=current_user.id,
+        username=current_user.username,
+        is_admin=current_user.is_admin,
+        created_at=current_user.created_at
+    ) 

@@ -59,7 +59,28 @@ def get_resources(skip: int = 0, limit: int = 100, include_history: bool = False
                     except Exception as e:
                         print(f"Error moving list poster image: {e}")
     
-    return resources
+    # 显式将SQLAlchemy模型列表转换为Pydantic模型列表
+    result = []
+    for resource in resources:
+        result.append(ResourceSchema(
+            id=resource.id,
+            title=resource.title,
+            title_en=resource.title_en,
+            description=resource.description,
+            resource_type=resource.resource_type,
+            images=resource.images,
+            poster_image=resource.poster_image,
+            links=resource.links,
+            status=resource.status,
+            supplement=resource.supplement,
+            original_resource_id=resource.original_resource_id,
+            is_supplement_approval=resource.is_supplement_approval,
+            likes_count=resource.likes_count,
+            created_at=resource.created_at,
+            updated_at=resource.updated_at
+        ))
+    
+    return result
 
 # 获取待审批的资源 - 仅管理员可访问
 @router.get("/pending", response_model=List[ResourceSchema])
@@ -90,7 +111,28 @@ def get_pending_resources(skip: int = 0, limit: int = 100,
     # 将待审批的补充内容资源添加到结果中
     resources.extend(pending_supplements)
     
-    return resources
+    # 显式将SQLAlchemy模型列表转换为Pydantic模型列表
+    result = []
+    for resource in resources:
+        result.append(ResourceSchema(
+            id=resource.id,
+            title=resource.title,
+            title_en=resource.title_en,
+            description=resource.description,
+            resource_type=resource.resource_type,
+            images=resource.images,
+            poster_image=resource.poster_image,
+            links=resource.links,
+            status=resource.status,
+            supplement=resource.supplement,
+            original_resource_id=resource.original_resource_id,
+            is_supplement_approval=resource.is_supplement_approval,
+            likes_count=resource.likes_count,
+            created_at=resource.created_at,
+            updated_at=resource.updated_at
+        ))
+    
+    return result
 
 # 公开API - 获取已审批的资源列表
 @router.get("/public", response_model=List[ResourceSchema])
@@ -212,7 +254,28 @@ def get_public_resources(
                     db_resource.images = corrected_images
                     db.commit()
     
-    return resources
+    # 显式将SQLAlchemy模型列表转换为Pydantic模型列表
+    result = []
+    for resource in resources:
+        result.append(ResourceSchema(
+            id=resource.id,
+            title=resource.title,
+            title_en=resource.title_en,
+            description=resource.description,
+            resource_type=resource.resource_type,
+            images=resource.images,
+            poster_image=resource.poster_image,
+            links=resource.links,
+            status=resource.status,
+            supplement=resource.supplement,
+            original_resource_id=resource.original_resource_id,
+            is_supplement_approval=resource.is_supplement_approval,
+            likes_count=resource.likes_count,
+            created_at=resource.created_at,
+            updated_at=resource.updated_at
+        ))
+    
+    return result
 
 # 获取单个资源
 @router.get("/{resource_id}", response_model=ResourceSchema)
@@ -307,7 +370,24 @@ def get_resource(resource_id: int, is_admin_view: bool = False, db: Session = De
                         print(f"Error moving poster image: {e}")
                         # 保留原路径
     
-    return resource
+    # 显式将SQLAlchemy模型转换为Pydantic模型
+    return ResourceSchema(
+        id=resource.id,
+        title=resource.title,
+        title_en=resource.title_en,
+        description=resource.description,
+        resource_type=resource.resource_type,
+        images=resource.images,
+        poster_image=resource.poster_image,
+        links=resource.links,
+        status=resource.status,
+        supplement=resource.supplement,
+        original_resource_id=resource.original_resource_id,
+        is_supplement_approval=resource.is_supplement_approval,
+        likes_count=resource.likes_count,
+        created_at=resource.created_at,
+        updated_at=resource.updated_at
+    )
 
 # 创建新资源 - 匿名用户可提交，状态默认为待审批
 @router.post("/", response_model=ResourceSchema)
@@ -332,7 +412,25 @@ def create_resource(resource: ResourceCreate, db: Session = Depends(get_db)):
     db.add(db_resource)
     db.commit()
     db.refresh(db_resource)
-    return db_resource
+    
+    # 显式将SQLAlchemy模型转换为Pydantic模型
+    return ResourceSchema(
+        id=db_resource.id,
+        title=db_resource.title,
+        title_en=db_resource.title_en,
+        description=db_resource.description,
+        resource_type=db_resource.resource_type,
+        images=db_resource.images,
+        poster_image=db_resource.poster_image,
+        links=db_resource.links,
+        status=db_resource.status,
+        supplement=db_resource.supplement,
+        original_resource_id=db_resource.original_resource_id,
+        is_supplement_approval=db_resource.is_supplement_approval,
+        likes_count=db_resource.likes_count,
+        created_at=db_resource.created_at,
+        updated_at=db_resource.updated_at
+    )
 
 # 更新资源 - 仅管理员可更新
 @router.put("/{resource_id}", response_model=ResourceSchema)
@@ -412,7 +510,24 @@ def update_resource(
         traceback.print_exc()
         raise HTTPException(status_code=500, detail="服务器处理更新请求时出错")
     
-    return db_resource
+    # 显式将SQLAlchemy模型转换为Pydantic模型
+    return ResourceSchema(
+        id=db_resource.id,
+        title=db_resource.title,
+        title_en=db_resource.title_en,
+        description=db_resource.description,
+        resource_type=db_resource.resource_type,
+        images=db_resource.images,
+        poster_image=db_resource.poster_image,
+        links=db_resource.links,
+        status=db_resource.status,
+        supplement=db_resource.supplement,
+        original_resource_id=db_resource.original_resource_id,
+        is_supplement_approval=db_resource.is_supplement_approval,
+        likes_count=db_resource.likes_count,
+        created_at=db_resource.created_at,
+        updated_at=db_resource.updated_at
+    )
 
 # 审批资源 - 仅管理员可审批
 @router.put("/{resource_id}/approve", response_model=ResourceSchema)
@@ -634,7 +749,24 @@ async def approve_resource(
     
     db.commit()
     db.refresh(db_resource)
-    return db_resource
+    # 显式将SQLAlchemy模型转换为Pydantic模型
+    return ResourceSchema(
+        id=db_resource.id,
+        title=db_resource.title,
+        title_en=db_resource.title_en,
+        description=db_resource.description,
+        resource_type=db_resource.resource_type,
+        images=db_resource.images,
+        poster_image=db_resource.poster_image,
+        links=db_resource.links,
+        status=db_resource.status,
+        supplement=db_resource.supplement,
+        original_resource_id=db_resource.original_resource_id,
+        is_supplement_approval=db_resource.is_supplement_approval,
+        likes_count=db_resource.likes_count,
+        created_at=db_resource.created_at,
+        updated_at=db_resource.updated_at
+    )
 
 # 删除资源 - 仅管理员可删除
 @router.delete("/{resource_id}", status_code=204)
@@ -748,7 +880,24 @@ async def supplement_resource(
     db.commit()
     db.refresh(db_resource)
     
-    return db_resource
+    # 显式将SQLAlchemy模型转换为Pydantic模型
+    return ResourceSchema(
+        id=db_resource.id,
+        title=db_resource.title,
+        title_en=db_resource.title_en,
+        description=db_resource.description,
+        resource_type=db_resource.resource_type,
+        images=db_resource.images,
+        poster_image=db_resource.poster_image,
+        links=db_resource.links,
+        status=db_resource.status,
+        supplement=db_resource.supplement,
+        original_resource_id=db_resource.original_resource_id,
+        is_supplement_approval=db_resource.is_supplement_approval,
+        likes_count=db_resource.likes_count,
+        created_at=db_resource.created_at,
+        updated_at=db_resource.updated_at
+    )
 
 # 获取待审批的补充内容 - 用于审批界面
 @router.get("/{resource_id}/supplement", response_model=dict)
@@ -801,7 +950,28 @@ def get_pending_supplement_resources(
     end = skip + limit
     paginated_resources = pending_resources[start:end]
     
-    return paginated_resources
+    # 显式将SQLAlchemy模型列表转换为Pydantic模型列表
+    result = []
+    for resource in paginated_resources:
+        result.append(ResourceSchema(
+            id=resource.id,
+            title=resource.title,
+            title_en=resource.title_en,
+            description=resource.description,
+            resource_type=resource.resource_type,
+            images=resource.images,
+            poster_image=resource.poster_image,
+            links=resource.links,
+            status=resource.status,
+            supplement=resource.supplement,
+            original_resource_id=resource.original_resource_id,
+            is_supplement_approval=resource.is_supplement_approval,
+            likes_count=resource.likes_count,
+            created_at=resource.created_at,
+            updated_at=resource.updated_at
+        ))
+    
+    return result
 
 # 喜欢资源 API 端点
 @router.post("/{resource_id}/like")
