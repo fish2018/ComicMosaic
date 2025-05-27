@@ -85,10 +85,61 @@
 首先创建所需的目录结构：
 
 ```bash
+```
 /home/work/dongman/
-├── frontend/         # 前端代码目录
-├── backend/          # 后端代码目录
-└── assets/           # 资源文件目录（如上传的图片等）
+├── assets/                   # 资源文件目录（用户上传的图片）
+│   ├── imgs/
+│   └── uploads/
+├── backend/                  # 后端代码目录
+│   ├── app/
+│   │   ├── main.py           # FastAPI主应用入口点
+│   │   ├── models/
+│   │   │   ├── database.py   # 数据库连接设置
+│   │   │   └── models.py     # SQLAlchemy数据模型
+│   │   ├── routers/
+│   │   │   ├── auth.py       # 认证相关路由
+│   │   │   └── resources.py  # 资源管理路由
+│   │   ├── schemas/
+│   │   │   └── schemas.py    # Pydantic模型
+│   │   └── utils/
+│   │       ├── __init__.py   # Python包初始化文件
+│   │       ├── auth.py       # 认证工具函数
+│   │       └── image_utils.py # 图像处理工具
+│   ├── resource_hub.db       # SQLite数据库文件
+│   ├── requirements.txt      # Python依赖项
+│   ├── run.py                # 应用启动脚本
+│   └── README.md             # 后端文档
+├── frontend/                 # 前端代码目录
+│   ├── assets/               # 静态资源
+│   ├── node_modules/         # npm包
+│   ├── src/
+│   │   ├── assets/           # 前端静态资源
+│   │   ├── components/
+│   │   │   └── LocalSearch.vue # 本地搜索组件
+│   │   ├── router/
+│   │   │   └── index.js      # Vue路由配置
+│   │   ├── utils/
+│   │   │   ├── auth.js       # 认证相关工具
+│   │   │   └── imageUtils.js # 图像处理工具
+│   │   ├── views/
+│   │   │   ├── About.vue     # 关于页面
+│   │   │   ├── Admin.vue     # 管理员控制台
+│   │   │   ├── Home.vue      # 首页
+│   │   │   ├── Login.vue     # 登录页
+│   │   │   ├── ResourceDetail.vue # 资源详情页
+│   │   │   ├── ResourceReview.vue # 资源审核页
+│   │   │   └── SubmitResource.vue # 资源提交页面
+│   │   ├── App.vue           # 根组件
+│   │   └── main.js           # Vue应用入口点
+│   ├── .eslintrc.json        # ESLint配置
+│   ├── index.html            # HTML入口
+│   ├── package-lock.json     # npm依赖锁定
+│   ├── package.json          # npm项目配置
+│   ├── README.md             # 前端文档
+│   └── vite.config.js        # Vite构建配置
+├── migrations/               # 数据库迁移脚本
+└── prompt.md                 # 项目概述文档
+``` 
 ```
 
 ## 二、前端部署
