@@ -1,6 +1,9 @@
 # ComicMosaic
 一个开源美漫共建平台，不同用户可以自由提交动漫信息(标题、类型、简介、图片、资源链接)，像马赛克一样，由多方贡献拼凑成完整资源。当然程序本身是通用的，用来做电影、剧集、综艺等等都可以。  
 
+现在正式环境已经改为golang重构版 https://github.com/fish2018/GoComicMosaic
+
+
 正式上线地址：https://dm.xueximeng.com/  
 套CF CDN地址：https://mm.252035.xyz/
 
